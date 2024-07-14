@@ -19,6 +19,7 @@
             font-family: 'Lato', 'Segoe UI';
             font-size: 16px;
             font-variant: small-caps;
+           
         }
         body {
             margin: 0;
@@ -27,26 +28,58 @@
             overflow-x: hidden;
             width: 100vw;
             height: 100vh;
+        
         }
-        body::-webkit-scrollbar {
+        
+        
+        video {
             display: none;
-        }
-        hr {
-            width: 100%;
-        }
-        .play {
-            position: absolute;
+            margin: auto;
+            border-radius: 50%;
             width: 256px;
             height: 256px;
-            z-index: 9;
-            bottom: 15%;
+            object-fit: cover;
+            position: absolute;
+            top: 50%;
             left: 50%;
-            margin-left: -125px;
-            display: none;
-            filter: grayscale(1);
+            transform: translate(-50%, -50%);
         }
-        .play:hover {
-            filter: grayscale(0);
+        canvas{
+            display:none;
+            margin: auto;
+            margin-top: 30%;
+            /* Set the canvas height */
+        }
+       .front{
+        font-size: 3rem;
+        font-weight: bold;
+        text-align: center;
+        position: absolute;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        z-index: 10;
+        color: #fff;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+        animation: colorChange 10s infinite alternate; 
+       }
+     
+.front-gif {
+    display: block;
+    margin: 20px auto 0;
+    width: 300px;  /* Adjust the size as needed */
+    height: auto;
+}
+       
+       @keyframes colorChange {
+    0% { color: #fff; }
+    25% { color: #383218; }
+    50% { color: #5d18ff; }
+    75% { color: #66ccff; }
+    100% { color: #fff; }
+}
+        hr {
+            width: 100%;
         }
         .btn-background {
             fill: grey;
@@ -82,6 +115,18 @@
             padding: 8px;
             cursor: pointer;
         }
+        .menubar div {
+            padding: 10px;
+        }
+        .loader-container {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
         .loader {
             width: 300px;
             height: 300px;
@@ -89,11 +134,9 @@
             border-radius: 50%;
             border-top: 4px solid #d82323;
             animation: spin 4s linear infinite;
-            position: absolute;
-            bottom: 15%;
-            left: 50%;
-            margin-left: -150px;
-            z-index: 15;
+            position: relative;
+           
+            
         }
         .loader::before, .loader::after {
             content: "";
@@ -113,6 +156,7 @@
             border-top-color: #3ba9d8;
             animation: spin 1.5s linear infinite;
         }
+       
         @keyframes spin {
             from {
                 transform: rotate(0deg);
@@ -151,19 +195,120 @@
                 transform: rotate(360deg);
             }
         }
+        #uploadForm {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            margin-top: 20px;
+        }
+        #uploadForm input, #uploadForm button {
+            margin: 5px 0;
+        }
+        #fileInput{
+            border: 2px solid rgb(107, 20, 220);
+            color: white;
+            background-color: transparent;
+            padding: 10px 20px;
+            
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+        #fileInput:hover{
+            
+            background-color: rgb(107, 20, 220);
+        
+        }
+        #imageUpload #verify{
+            display: inline-block;
+    background: rgb(107, 20, 220);
+    color: #fff;
+    font-size: 15px;
+    padding: 10px 26px;
+    margin-top: 20px;
+    font-weight: 400;
+    border: 2px solid rgb(107, 20, 220);
+    transition: all 0.3s ease;
+        }
+        #imageUpload #verify:hover{
+            color: rgb(107, 20, 220);
+        background: none;
+        }
+        .section {
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
+        }
+        .section.active {
+            display: flex;
+        }
+        .controls {
+            position: absolute;
+            top: 10%;
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+        }
+        .button {
+            padding: 10px 20px;
+            background: #303030;
+            border: none;
+            color: white;
+            cursor: pointer;
+            font-size: 1rem;
+        }
+        .button:hover {
+            background: #505050;
+        }
     </style>
 </head>
+
 <body>
-<div>
+    <div class="menubar">
+        <div onclick="showSection('liveVideo')">Realtime Face</div>
+        <div onclick="showSection('imageUpload')">Fingerprint</div>
+    </div>
+    <div class="front" id="front">
+        <img src="{% static 'upload/assets/icon.gif' %}" alt="Your GIF" class="front-gif">
+        
+        WELCOME TO BIOAUTHENTICA!!</div>
+        
+    
+    <div id="liveVideo" class="section">
+        
+        <div class="controls">
+            
+            <button class="button" id="startButton" onclick="startStream()">Start Stream</button>
+            <button class="button" id="stopButton" onclick="stopStream()">Stop Stream</button>
+        </div>
     <div id="play" class="play icon-play"></div>
     <div id="background">
         <div class="wave one"></div>
         <div class="wave two"></div>
         <div class="wave three"></div>
     </div>
+    <div class="loader-container">
     <div id="loader" class="loader"></div>
-    <div id="status" class="status"></div>
-    <div id="menubar" class="menubar">
+    <video id="video2" autoplay muted></video>
+    </div>
+    <canvas id="canvas2" ></canvas>
+    
+    </div>
+    <div id="imageUpload" class="section">
+        <h1>Fingerprint Recognition</h1>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" id="fileInput" name="file">
+            <button type="submit" id="verify">Verify</button>
+        </form>
+        <div id="result"></div>
+        
+    </div>
+   <!-- <div id="menubar" class="menubar">
         <div id="btnModel" class="icon" onclick="setShowModelMenu(!showModelMenu)">
             <div class="icon-games"></div>models
         </div>
@@ -173,59 +318,182 @@
         </div>
         <div id="btnDocs" class="icon">DOCS</div>
     </div>
-    <div id="media">
-        <canvas id="canvas" class="canvas"></canvas>
-        <video id="video" playsInline class="video"></video>
-    </div>
-    <h1>Face Recognition</h1>
-    <form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" name="file">
-        <button type="submit">Verify</button>
-    </form>
-    <div id="result"></div>
-    <script>
-        document.getElementById('uploadForm').addEventListener('submit', async (event) => {
-            event.preventDefault();
-            const formData = new FormData();
-            formData.append('file', document.getElementById('fileInput').files[0]);
+  
 
-            const response = await fetch('/verify/', {
-                method: 'POST',
-                body: formData
-            });
-            const result = await response.json();
-            document.getElementById('result').textContent = `Verified: ${result.verified}`;
-        });
-    </script>
+    <h1 >Face Recognition</h1>
+   
     <div id="compare-container" class="compare-image">
         <canvas id="compare-canvas" width="200" height="200"></canvas>
         <div id="similarity"></div>
     </div>
-    <div id="samples-container" class="samples-container"></div>
-    <div id="hint" class="hint"></div>
-    <div id="log" class="log"></div>
-    <div id="results" class="results"></div>
-    <div id="modelMenu" style="display: none;">
+-->
         <!-- Your model menu content goes here -->
-    </div>
-</div>
+    <!--</div>
+</div>-->
 
-<script>
-    // Dummy functions for handling clicks
-    let showModelMenu = false;
-    let videoStarted = false;
 
-    function setShowModelMenu(show) {
-        showModelMenu = show;
-        var modelMenu = document.getElementById('modelMenu');
-        modelMenu.style.display = show ? 'block' : 'none';
+    
+    <script>
+       let streaming = false;
+        let intervalId = null;
+        
+        function startStream() {
+            console.log("Starting stream...");
+            const video = document.getElementById('video2');
+            const canvas = document.getElementById('canvas2');
+            if (!video) {
+                    console.error("Video element not found!");
+                    return;
+                }
+    
+            if (!canvas) {
+                    console.error("Canvas element not found!");
+                    return;
+                }
+                const context = canvas.getContext('2d');
+                if (!context) {
+                    console.error("Failed to get canvas context!");
+                    return;
+                }
+            navigator.mediaDevices.getUserMedia({ video: true, audio: false })
+                .then(function(stream) {
+                    video.srcObject = stream;
+                    video.play();
+                    video.style.display = 'block';  // Make sure the video is displayed
+                    canvas.style.display = 'block';
+                    streaming = true;
+                    console.log("Stream started successfully.");
+                })
+                .catch(function(err) {
+                    console.log("An error occurred: " + err);
+                });
+    
+            video.addEventListener('canplay', function(ev) {
+                if (!streaming) {
+                    canvas.setAttribute('width', video.videoWidth);
+                    canvas.setAttribute('height', video.videoHeight);
+                    streaming = true;
+                    console.log("Video is ready and streaming.");
+                }
+            }, false);
+    
+            intervalId = setInterval(captureFrame, 1000); // Capture frame every second
+        }
+    
+        function captureFrame() {
+            const video = document.getElementById('video2');
+            const canvas = document.getElementById('canvas2');
+            const context = canvas.getContext('2d');
+            if (video && streaming) {
+                context.drawImage(video, 0, 0, canvas.width, canvas.height);
+                let data = canvas.toDataURL('image/jpeg');
+                fetch('/process_frame/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({ image: data })
+                }).then(response => response.json())
+                  .then(data => {
+                    console.log("Frame processed, drawing detections.");
+                      drawDetections(data.detections);
+                  });
+            }
+        }
+    
+        function drawDetections(detections) {
+            const video = document.getElementById('video2');
+            const canvas = document.getElementById('canvas2');
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            detections.forEach(detection => {
+                const [x1, y1, x2, y2] = detection.box;
+                context.strokeStyle = 'green';
+                context.lineWidth = 2;
+                context.strokeRect(x1, y1, x2 - x1, y2 - y1);
+                context.fillStyle = 'green';
+                context.font = '16px Arial';
+                context.fillText(`${detection.class} (${(detection.confidence * 100).toFixed(1)}%)`, x1, y1 - 10);
+            });
+        }
+    
+        function stopStream() {
+            const video = document.getElementById('video2');
+            if (video && video.srcObject) {
+                video.srcObject.getTracks().forEach(track => track.stop());
+            }
+            if (intervalId) {
+                clearInterval(intervalId);
+            }
+            video.style.display = 'none';
+            const canvas = document.getElementById('canvas');
+            canvas.style.display = 'none';
+            streaming = false;
+        }
+        function updateStatus(data) {
+        const status = document.getElementById('status');
+        if (status) {
+            status.innerText = data.message;
+        }
+    }
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+        document.getElementById('uploadForm').onsubmit = function(event) {
+        event.preventDefault();
+        const formData = new FormData();
+        formData.append('file', document.getElementById('fileInput').files[0]);
+        fetch('/upload/', {
+            method: 'POST',
+            body: formData
+        }).then(response => response.json())
+          .then(data => {
+              const resultDiv = document.getElementById('result');
+              resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+          });
+    };
+
+    function showSection(sectionId) {
+        const sections = document.querySelectorAll('.section');
+        sections.forEach(section => {
+            section.classList.remove('active');
+            if (section.id === sectionId) {
+                section.classList.add('active');
+            }
+        });
+        
+        if (sectionId !== 'liveVideo') {
+                stopStream();
+            }
+            const frontDiv = document.getElementById('front');
+            if (frontDiv) {
+                frontDiv.style.display = 'none';
+            }
     }
 
-    function setVideoStarted(started) {
-        videoStarted = started;
-        var btnStartText = document.getElementById('btnStartText');
-        btnStartText.innerText = started ? 'stop video' : 'start video';
-    }
-</script>
+    
+        
+    </script>
+     <!--<form id="uploadForm" enctype="multipart/form-data">
+        <input type="file" id="fileInput" name="file">
+        <button type="submit">Verify</button>
+    </form>
+    <div id="result"></div>
+    
+    <video id="video2" width="300" height="300" autoplay></video>
+    <canvas id="canvas2" width="300" height="300"></canvas>
+-->
 </body>
 </html>

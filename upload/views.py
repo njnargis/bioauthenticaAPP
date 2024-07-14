@@ -11,7 +11,89 @@ from .serializers import ImageSerializer
 def index(request):
     return render(request, 'upload/index.html')
 '''
+from django.http import JsonResponse
+import numpy as np
+import cv2
+from ultralytics import YOLO
+import base64
+import os
+#from django.core.files.base import ContentFile
+from django.views.decorators.csrf import csrf_exempt
+#from django.http import StreamingHttpResponse
+import json
+# Load the model
+model_path = 'D:/H/NEWREACTAPP/backend/backend/best.pt'  # Update this path
+model = YOLO(model_path)
+def camera(request):
+    return render(request, 'upload/camera.html')
+def js_to_image(js_object):
+    image_bytes = base64.b64decode(js_object.split(',')[1])
+    img_array = np.frombuffer(image_bytes, dtype=np.uint8)
+    img = cv2.imdecode(img_array, flags=1)
+    return img
 
+def video_stream(request):
+    if request.method == 'POST':
+        data = request.POST['frame']
+        img = js_to_image(data)
+
+        # Perform inference
+        results = model(img)
+
+        # Process results
+        response_data = []
+        for result in results:
+            for box in result.boxes:
+                x1, y1, x2, y2 = map(int, box.xyxy[0])
+                confidence = box.conf.item()
+                cls = int(box.cls.item())
+                response_data.append({
+                    'x1': x1, 'y1': y1, 'x2': x2, 'y2': y2,
+                    'confidence': confidence, 'class': model.names[cls]
+                })
+        
+        return JsonResponse(response_data, safe=False)
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
+'''def webcam_view(request):
+    return render(request, 'webcamapp/webcam.html')
+
+
+def gen_frames():
+    cap = cv2.VideoCapture(0)
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, 640)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, 480)
+    cap.set(cv2.CAP_PROP_FOURCC, cv2.VideoWriter_fourcc(*'MJPG'))  # Use MJPG codec
+
+    while True:
+        success, frame = cap.read()
+        if not success:
+            break
+        else:
+            ret, buffer = cv2.imencode('.jpg', frame)
+            frame = buffer.tobytes()
+            yield (b'--frame\r\n'
+                   b'Content-Type: image/jpeg\r\n\r\n' + frame + b'\r\n')
+
+def video_feed(request):
+    return StreamingHttpResponse(gen_frames(), content_type='multipart/x-mixed-replace; boundary=frame')
+
+@csrf_exempt
+def capture_image(request):
+    if request.method == 'POST':
+        cap = cv2.VideoCapture(0)
+        ret, frame = cap.read()
+        cap.release()
+        if not ret:
+            return JsonResponse({'status': 'failed', 'message': 'Failed to capture image'}, status=400)
+
+        _, buffer = cv2.imencode('.jpg', frame)
+        image_data = ContentFile(buffer.tobytes(), name="captured_image.jpg")
+        
+        # Save or process the image_data here
+        
+        return JsonResponse({'status': 'success'})
+    return JsonResponse({'status': 'failed'}, status=400)
+    '''
 class ImageUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
@@ -23,79 +105,41 @@ class ImageUploadView(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
                # views.py
-
-
-import os
-import cv2
-import uuid
-import numpy as np
-import tensorflow as tf
-from django.shortcuts import render
-from django.http import JsonResponse
-
-# Define the paths
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-POS_PATH = os.path.join(BASE_DIR, 'data', 'positive')
-NEG_PATH = os.path.join(BASE_DIR, 'data', 'negative')
-ANC_PATH = os.path.join(BASE_DIR, 'data', 'anchor')
-INPUT_PATH = os.path.join(BASE_DIR, 'application_data', 'input_image', 'input_image.jpg')
-VERIFICATION_PATH = os.path.join(BASE_DIR, 'application_data', 'verification_images')
-
-# Ensure directories exist
-os.makedirs(POS_PATH, exist_ok=True)
-os.makedirs(NEG_PATH, exist_ok=True)
-os.makedirs(ANC_PATH, exist_ok=True)
-os.makedirs(os.path.dirname(INPUT_PATH), exist_ok=True)
-os.makedirs(VERIFICATION_PATH, exist_ok=True)
-
-def load_model():
-    class L1Dist(tf.keras.layers.Layer):
-        def __init__(self, **kwargs):
-            super().__init__()
-
-        def call(self, input_embedding, validation_embedding):
-            return tf.math.abs(input_embedding - validation_embedding)
-
-    model = tf.keras.models.load_model(os.path.join(BASE_DIR, 'siamesemodelv2.h5'), custom_objects={'L1Dist': L1Dist})
-    return model
-
-siamese_model = load_model()
-
-def preprocess(file_path):
-    byte_img = tf.io.read_file(file_path)
-    img = tf.io.decode_jpeg(byte_img)
-    img = tf.image.resize(img, (100, 100))
-    img = img / 255.0
+def base64_to_image(base64_str):
+    img_data = base64.b64decode(base64_str.split(',')[1])
+    img_array = np.frombuffer(img_data, np.uint8)
+    img = cv2.imdecode(img_array, cv2.IMREAD_COLOR)
     return img
 
-def verify(model, detection_threshold, verification_threshold):
-    results = []
-    for image in os.listdir(VERIFICATION_PATH):
-        input_img = preprocess(INPUT_PATH)
-        validation_img = preprocess(os.path.join(VERIFICATION_PATH, image))
-        result = model.predict(list(np.expand_dims([input_img, validation_img], axis=1)))
-        results.append(result)
+@csrf_exempt
+def process_frame(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        image_data = data.get('image')
+        if image_data:
+            img = base64_to_image(image_data)
 
-    detection = np.sum(np.array(results) > detection_threshold)
-    verification = detection / len(os.listdir(VERIFICATION_PATH))
-    verified = verification > verification_threshold
-    return results, verified
+            # Perform object detection
+            results = model(img)
+
+            detections = []
+            for result in results:
+                for box in result.boxes:
+                    x1, y1, x2, y2 = map(int, box.xyxy[0])
+                    confidence = box.conf.item()
+                    cls = int(box.cls.item())
+                    detections.append({
+                        'class': model.names[cls],
+                        'confidence': confidence,
+                        'box': [x1, y1, x2, y2]
+                    })
+
+            return JsonResponse({'detections': detections})
+
+    return JsonResponse({'error': 'Invalid request method'}, status=400)
 
 def index(request):
     return render(request, 'upload/index.html')
 
-def verify_image(request):
-    if request.method == 'POST':
-        file = request.FILES['file']
-        img_path = INPUT_PATH
-        with open(img_path, 'wb+') as destination:
-            for chunk in file.chunks():
-                destination.write(chunk)
-
-        results, verified = verify(siamese_model, 0.5, 0.5)
-        response = {
-            'verified': verified,
-            'results': [float(res[0]) for res in results]
-        }
-        return JsonResponse(response)
-    return JsonResponse({'error': 'Invalid request'}, status=400)
+def video_capture(request):
+    return render(request, 'upload/index.html')
