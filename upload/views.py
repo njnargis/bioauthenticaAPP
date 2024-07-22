@@ -5,6 +5,12 @@ from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser, FormParser
 from rest_framework import status
 from .serializers import ImageSerializer
+from PIL import Image
+import random
+import subprocess
+from imgaug import augmenters as iaa
+from subprocess import run, PIPE
+
 # Create your views here.
 '''
 
@@ -12,7 +18,7 @@ def index(request):
     return render(request, 'upload/index.html')
 '''
 from django.http import JsonResponse
-import numpy as np
+import numpy as np 
 import cv2
 from ultralytics import YOLO
 import base64
@@ -21,6 +27,16 @@ import os
 from django.views.decorators.csrf import csrf_exempt
 #from django.http import StreamingHttpResponse
 import json
+# Define paths to virtual environments
+VENV_FINGERPRINT = "D:/G/python/fingerprint/ven"
+
+def run_command(command, venv):
+    """Run a command in a specified virtual environment."""
+    activate_cmd = os.path.join(venv, 'Scripts', 'activate') + ' && '
+    full_command = activate_cmd + command
+    print(f"Running command: {full_command}")
+    process = subprocess.run(full_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+    return process.stdout.decode('utf-8'), process.stderr.decode('utf-8')
 # Load the model
 model_path = 'D:/H/NEWREACTAPP/backend/backend/best.pt'  # Update this path
 model = YOLO(model_path)
@@ -94,16 +110,61 @@ def capture_image(request):
         return JsonResponse({'status': 'success'})
     return JsonResponse({'status': 'failed'}, status=400)
     '''
+def fingerprint_recognition_view(request):
+    if request.method == 'POST':
+        # Command to run the fingerprint recognition script
+        command = "D:/G/python/fingerprint/ven/fingerprint_recognition.py"
+        fingerprint_output, fingerprint_error = run_command(command, VENV_FINGERPRINT)
+        # Parse output if necessary
+       
+        context = {
+            'fingerprint_output': fingerprint_output,
+            'fingerprint_error': fingerprint_error,
+            
+        }
+        return JsonResponse(context)
+
+    return JsonResponse({'message': 'Upload page'})
 class ImageUploadView(APIView):
     parser_classes = (MultiPartParser, FormParser)
 
     def post(self, request, *args, **kwargs):
-        serializer = ImageSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        else:
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        file = request.FILES.get('file')
+        if file:
+            # Save the file to a temporary location
+            temp_file_path = 'temp_image.png'
+            with open(temp_file_path, 'wb') as temp_file:
+                for chunk in file.chunks():
+                    temp_file.write(chunk)
+            
+            # Command to run the fingerprint recognition script
+            command = f"python D:/G/pythonf/ingerprint/ven/fingerprint_recognition.py --image {temp_file_path}"
+            fingerprint_output, fingerprint_error = run_command(command, VENV_FINGERPRINT)
+
+            if fingerprint_error:
+                return JsonResponse({'error': fingerprint_error}, status=500)
+            
+            result = json.loads(fingerprint_output)
+            augmented_image = result['random_img']
+            pred_rx = result['pred_rx']
+            ry = result['ry']
+            pred_ux = result['pred_ux']
+            uy = result['uy']
+            
+            # Prepare the response
+            augmented_image_base64 = base64.b64encode(augmented_image).decode('utf-8')
+            
+            response_data = {
+                'augmented_image': augmented_image_base64,
+                'pred_rx': pred_rx,
+                'matched_label': ry,
+                'pred_ux': pred_ux,
+                'unmatched_label': uy
+            }
+            
+            return JsonResponse(response_data)
+        
+        return JsonResponse({'error': 'No file provided'}, status=400)
                # views.py
 def base64_to_image(base64_str):
     img_data = base64.b64decode(base64_str.split(',')[1])

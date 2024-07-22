@@ -302,10 +302,20 @@
     <div id="imageUpload" class="section">
         <h1>Fingerprint Recognition</h1>
         <form id="uploadForm" enctype="multipart/form-data">
+            
+            {% csrf_token %}
             <input type="file" id="fileInput" name="file">
-            <button type="submit" id="verify">Verify</button>
+            <button type="submit" id="verify" onclick="handleVerify()">Verify</button>
         </form>
-        <div id="result"></div>
+        <div id="result">
+            
+                <h2>Result:</h2>
+                <div id="matchImage"></div>
+                <div id="unmatchImage"></div>
+                <pre id="output"></pre>
+                <pre id="error"></pre>
+           
+        </div>
         
     </div>
    <!-- <div id="menubar" class="menubar">
@@ -451,20 +461,99 @@
             }
             return cookieValue;
         }
+       
         document.getElementById('uploadForm').onsubmit = function(event) {
-        event.preventDefault();
-        const formData = new FormData();
-        formData.append('file', document.getElementById('fileInput').files[0]);
-        fetch('/upload/', {
-            method: 'POST',
-            body: formData
-        }).then(response => response.json())
-          .then(data => {
-              const resultDiv = document.getElementById('result');
-              resultDiv.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
-          });
-    };
+    event.preventDefault();
+    
+    // Create FormData object and append the file
+    const formData = new FormData();
+    formData.append('file', document.getElementById('fileInput').files[0]);
+    
+    // Send the form data to the server
+    fetch('/upload/', {
+        method: 'POST',
+        body: formData,
+        headers: {
+            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+        }
+    })
+    .then(response => {
+        // Check if the response is OK
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        const resultDiv = document.getElementById('result');
+        resultDiv.innerHTML = ``;
+        
+        // Ensure that augmented_image is a valid array
+        if (Array.isArray(data.augmented_image)) {
+            // Flatten and decode the base64 image data
+            const flattenedData = data.augmented_image.flat();
+            const img = new Image();
+            img.src = 'data:image/png;base64,' + btoa(new Uint8Array(flattenedData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+            img.alt = 'Augmented Image';
+            resultDiv.appendChild(img);
+        } else {
+            console.error('Expected augmented_image to be an array but received:', data.augmented_image);
+        }
 
+        // Display results
+        resultDiv.innerHTML += `<p>Matched Image Prediction: ${data.pred_rx.toFixed(2)}, Label: ${data.matched_label}</p>`;
+        resultDiv.innerHTML += `<p>Unmatched Image Prediction: ${data.pred_ux.toFixed(2)}, Label: ${data.unmatched_label}</p>`;
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
+/*
+        const csrftoken = getCookie('csrftoken');
+
+    async function handleVerify() {
+        const fileInput = document.getElementById('fileInput');
+        const formData = new FormData();
+        formData.append('image', fileInput.files[0]);
+
+        try {
+            const response = await fetch('/upload/', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken,
+                },
+                body: formData,
+            });
+
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+
+            const result = await response.json();
+
+            // Display results
+            document.getElementById('output').textContent = result.fingerprint_output;
+            document.getElementById('error').textContent = result.fingerprint_error;
+
+            // Display images
+            if (result.match_image_url) {
+                document.getElementById('matchImage').innerHTML = `<img src="${result.match_image_url}" alt="Match Image"/>`;
+            }
+            if (result.unmatch_image_url) {
+                document.getElementById('unmatchImage').innerHTML = `<img src="${result.unmatch_image_url}" alt="Unmatch Image"/>`;
+            }
+
+            if (result.fingerprint_error) {
+                alert('An error occurred during fingerprint processing.');
+            } else {
+                alert('Fingerprint processing completed successfully.');
+            }
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert('An unexpected error occurred.');
+        }
+    }*/
     function showSection(sectionId) {
         const sections = document.querySelectorAll('.section');
         sections.forEach(section => {

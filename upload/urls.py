@@ -15,4 +15,5 @@ urlpatterns = [
     #path('capture_image/', views.capture_image, name='capture_image'),
     path('process_frame/', views.process_frame, name='process_frame'),
     path('video_capture/', views.video_capture, name='video_capture'),  # Add this line
+    path('upload/', views.fingerprint_recognition_view, name='upload'),
    ] 
