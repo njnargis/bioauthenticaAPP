@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Django App</title>
+    <title>BIOAuthentica</title>
     {% load static %}
     <!-- Link external CSS file -->
     <link rel="stylesheet" type="text/css" href="{% static 'upload/css/styles.css' %}">
@@ -30,7 +30,77 @@
             height: 100vh;
         
         }
-        
+        #about-us {
+            background: rgb(6, 86, 133);
+            border-radius: 8px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            margin: 2rem auto;
+            padding: 2rem;
+            max-width: 1200px;
+            overflow: hidden;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        #about-us:hover {
+            transform: scale(1.02);
+        }
+        #about-us h1 {
+            font-size: 2.5rem;
+            color: rgb(3, 3, 3);
+            margin-bottom: 1rem;
+            position: relative;
+            display: inline-block;
+        }
+        #about-us .content {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        #about-us h1::after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px; /* Adjust as needed */
+            width: 0;
+            height: 2px;
+            background-color: #131313; /* Adjust color as needed */
+            transition: width 0.3s ease;
+        }
+        #about-us h1:hover::after {
+            width: 100%;
+        }
+        #about-us .text,
+        #about-us .image {
+            flex: 1;
+            min-width: 300px;
+        }
+        #about-us .text {
+            padding: 1rem;
+        }
+        #about-us .text p {
+            line-height: 1.6;
+            color: rgb(7, 4, 4);
+        }
+        #about-us .image {
+            text-align: center;
+        }
+        #about-us .image img {
+            max-width: 100%;
+            border-radius: 8px;
+            transition: transform 0.3s ease;
+        }
+        #about-us .image img:hover {
+            transform: scale(1.05);
+        }
+        @media (max-width: 768px) {
+            #about-us {
+                margin: 1rem;
+                padding: 1rem;
+            }
+            #about-us h1 {
+                font-size: 2rem;
+            }
+        }
         
         video {
             display: none;
@@ -48,6 +118,8 @@
             display:none;
             margin: auto;
             margin-top: 30%;
+            height:250px;
+            width:250px;
             /* Set the canvas height */
         }
        .front{
@@ -78,6 +150,7 @@
     75% { color: #66ccff; }
     100% { color: #fff; }
 }
+
         hr {
             width: 100%;
         }
@@ -106,18 +179,54 @@
             font-weight: 100;
             text-shadow: 2px 2px #303030;
         }
+        nav ul {
+    list-style: none;
+    padding: 0;
+}
+nav ul li {
+    display: inline-block; /* Changed from inline to inline-block for proper sizing */
+    margin-right: 1rem;
+    position: relative; /* Necessary for positioning the pseudo-element */
+}
+nav ul li a {
+    color: #fff;
+    text-decoration: none;
+    position: relative; /* Necessary for positioning the pseudo-element */
+    display: block; /* Makes the entire area clickable */
+    padding: 10px; /* Optional: adjust as needed */
+}
+nav ul li a::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    bottom: -5px; /* Adjust based on your design */
+    width: 0;
+    height: 2px;
+    background-color: #732ae9; /* Adjust color as needed */
+    transition: width 0.3s ease;
+}
+
+nav ul li a:hover::after {
+    width: 100%;
+}
+main {
+    padding: 2rem;
+}
         .menubar {
             width: 100vw;
             background: #303030;
             display: flex;
             justify-content: space-evenly;
             text-align: center;
-            padding: 8px;
+            padding: 5px;
             cursor: pointer;
+            font-size: 20px;
+            font-family: 'Poppins', sans-serif;
         }
         .menubar div {
             padding: 10px;
         }
+       
         .loader-container {
             position: absolute;
             top: 50%;
@@ -209,7 +318,7 @@
             color: white;
             background-color: transparent;
             padding: 10px 20px;
-            
+            border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
             cursor: pointer;
@@ -225,6 +334,7 @@
     background: rgb(107, 20, 220);
     color: #fff;
     font-size: 15px;
+    border-radius: 5px;
     padding: 10px 26px;
     margin-top: 20px;
     font-weight: 400;
@@ -232,8 +342,8 @@
     transition: all 0.3s ease;
         }
         #imageUpload #verify:hover{
-            color: rgb(107, 20, 220);
-        background: none;
+            background-color:rgb(66, 25, 119) ;
+            transform: scale(1.05); 
         }
         .section {
             display: none;
@@ -261,23 +371,127 @@
             color: white;
             cursor: pointer;
             font-size: 1rem;
+            margin-top: 40px;
         }
         .button:hover {
             background: #505050;
         }
+        #sub {
+    background-color: rgb(107, 20, 220);
+    color: white; /* White text */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 8px 16px; /* Padding inside the button */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition for hover effects */
+}
+
+#sub:hover {
+    background-color: rgb(71, 21, 136); /* Darker red on hover */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+}
+
+#sub:focus {
+    outline: none; /* Remove default focus outline */
+}
+
+/* Style for the delete button */
+.delete-button {
+    background-color: #dc3545; /* Red background */
+    color: white; /* White text */
+    border: none; /* Remove default border */
+    border-radius: 5px; /* Rounded corners */
+    padding: 8px 16px; /* Padding inside the button */
+    cursor: pointer; /* Pointer cursor on hover */
+    transition: background-color 0.3s, transform 0.2s; /* Smooth transition for hover effects */
+}
+
+.delete-button:hover {
+    background-color: #c82333; /* Darker red on hover */
+    transform: scale(1.05); /* Slightly enlarge button on hover */
+}
+
+.delete-button:focus {
+    outline: none; /* Remove default focus outline */
+}
+#commentInput{
+    height: 100%;
+    width: 100%;
+    border: 1px solid lightgrey;
+    border-radius: 6px;
+    outline: none;
+    padding: 0 15px;
+    font-size: 17px;
+    font-family: 'Poppins', sans-serif;
+    transition: all 0.3s ease;
+    resize:none;
+}
+#comments h1{
+    margin-top: 30px;
+}
     </style>
 </head>
 
 <body>
     <div class="menubar">
-        <div onclick="showSection('liveVideo')">Realtime Face</div>
-        <div onclick="showSection('imageUpload')">Fingerprint</div>
+        <nav>
+            <ul>
+                <li><a href="#" onclick="showSection('home')">Home</a></li>
+                <li><a href="#" onclick="showSection('about-us')">About Us</a></li>
+                <li><a href="#" onclick="showSection('liveVideo')">Realtime Face</a></li>
+                <li><a href="#" onclick="showSection('imageUpload')">Fingerprint</a></li>
+                <li><a href="#" onclick="showSection('imageUpload1')">Image Upload</a></li>
+                <li><a href="#" onclick="showSection('comments')">Comments</a></li>
+            </ul>
+        </nav>
     </div>
-    <div class="front" id="front">
-        <img src="{% static 'upload/assets/icon.gif' %}" alt="Your GIF" class="front-gif">
-        
-        WELCOME TO BIOAUTHENTICA!!</div>
-        
+    
+    
+    
+    <!-- Home Section -->
+    <div id="home" class="section active">
+        <div id="front" class="front">
+            <img src="{% static 'upload/assets/icon.gif' %}" alt="Your GIF" class="front-gif">
+            WELCOME TO BIOAUTHENTICA!!
+        </div>
+    </div>
+    
+    <!-- About Section -->
+    <div id="about-us" class="section">
+        <h1>About Us</h1>
+        <div class="content">
+            <div class="text"><b>
+                <p>The scope of this work includes the design, implementation, and evaluation of a multimodal biometric authentication system. The system combines real-time face detection and recognition using the YOLOv8 framework and fingerprint recognition utilizing CNNs(Covolutional Neural Networks).<br>There is not a lot of datasets available on Indian faces and we tried to work on that point by starting it from University level </p>
+                <p>The aim is to facilitate the world of security and the fact that there are various organizations that uses face and fingerprint recognition to authenticate their users. Like in various government level examinations students are identified based on their face and fingerprint but the system that they uses is not that reliable and accurate soto tackle such kind of issues we are presenting BIOAuthentica , the web based biometric authentication system based on robust latest technology and machnine learning concepts.</p>
+                <p>Here, we are also providing a coment sections to let us know your views  and feedback on our work and you can also contribute in our dataset work which is still going on and it will be highly appreciated....THANKYOU!!!</p>
+            </b>
+            </div>
+            <div class="image">
+                <img src="./static/upload/assets/download.jpg" alt="About Us">
+            </div>
+        </div>
+    </div>
+    
+    <!-- Image Upload Section -->
+ <!-- Image Upload Section -->
+
+    
+    <!-- Comments Section -->
+    <div id="comments" class="section">
+        <div>
+            <h1>Comments</h1>
+            <form id="commentForm" onsubmit="handleCommentSubmit(event)">
+                {% csrf_token %}
+                <textarea id="commentInput" rows="4" placeholder="Write a comment..." required></textarea>
+                <button type="submit" class="button" id="sub">Submit</button>
+            </form>
+            <div id="commentsList"></div>
+        </div>
+    </div>
+ 
+    
+   
+   
     
     <div id="liveVideo" class="section">
         
@@ -302,14 +516,14 @@
     <div id="imageUpload" class="section">
         <h1>Fingerprint Recognition</h1>
         <form id="uploadForm" enctype="multipart/form-data">
-            
             {% csrf_token %}
+            
             <input type="file" id="fileInput" name="file">
             <button type="submit" id="verify" onclick="handleVerify()">Verify</button>
         </form>
         <div id="result">
             
-                <h2>Result:</h2>
+                
                 <div id="matchImage"></div>
                 <div id="unmatchImage"></div>
                 <pre id="output"></pre>
@@ -318,32 +532,118 @@
         </div>
         
     </div>
-   <!-- <div id="menubar" class="menubar">
-        <div id="btnModel" class="icon" onclick="setShowModelMenu(!showModelMenu)">
-            <div class="icon-games"></div>models
+    <div id="imageUpload1" class="section">
+     
+        <div class="controls">
+            
+            <button class="button" id="startButton1" >Start Camera</button>
+            <button class="button" id="captureButton1" >Capture Image</button>
+            <button class="button" id="stopButton1" >Stop Camera</button>
+            
+            <button class="button" onclick="saveImage()">Save Image</button>
         </div>
-        <div id="btnStart" class="icon" onclick="setVideoStarted(!videoStarted)">
-            <div class="icon-webcam"></div>
-            <span id="btnStartText">start video</span>
-        </div>
-        <div id="btnDocs" class="icon">DOCS</div>
-    </div>
-  
-
-    <h1 >Face Recognition</h1>
-   
-    <div id="compare-container" class="compare-image">
-        <canvas id="compare-canvas" width="200" height="200"></canvas>
-        <div id="similarity"></div>
-    </div>
--->
-        <!-- Your model menu content goes here -->
-    <!--</div>
-</div>-->
-
-
-    
+        <video id="video" autoplay></video>
+        <canvas id="canvas"></canvas>
+        
+    </div>    
     <script>
+       
+
+function addCommentToList(id, text, createdAt) {
+    const commentsList = document.getElementById('commentsList');
+
+    const commentElement = document.createElement('div');
+    commentElement.setAttribute('data-id', id);
+    commentElement.innerHTML = `
+        <p>${text} (Posted on: ${new Date(createdAt).toLocaleString()})</p>
+        <button class="delete-button" data-id="${id}">Delete</button>
+    `;
+    console.log(`Setting up delete button for comment ID: ${id}`);
+    commentElement.querySelector('.delete-button').addEventListener('click', function() {
+        const id = this.getAttribute('data-id'); // Retrieve data-id
+        console.log(`Delete button clicked for comment ID: ${id}`);
+        handleDeleteComment(id);
+    });
+
+    commentsList.appendChild(commentElement);
+}
+
+
+function handleDeleteComment(id) {
+    console.log(`Deleting comment with ID: ${id}`);
+    fetch(`/delete_comment/${id}/`, {
+        method: 'DELETE',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        }
+    })
+    .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to delete comment');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    removeCommentFromList(id);
+                } else {
+                    console.error('Failed to delete comment:', data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
+function removeCommentFromList(id) {
+    const commentElement = document.querySelector("div[data-id='${id}']");
+    if (commentElement) {
+        commentElement.remove();
+    }
+}
+
+// Update the function to fetch and display comments on page load
+document.addEventListener('DOMContentLoaded', (event) => {
+    fetch('/get_comments/')
+            .then(response => response.json())
+            .then(data => {
+                data.comments.forEach(comment => {
+                    addCommentToList(comment.id, comment.text, comment.created_at);
+                });
+            })
+            .catch(error => console.error('Error fetching comments:', error));
+        });
+        function handleCommentSubmit(event) {
+            event.preventDefault();
+            const commentInput = document.getElementById('commentInput');
+            const commentText = commentInput.value;
+
+            fetch('/save_comment/', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({ text: commentText })
+            })
+            .then(response => {
+                if (response.ok) {
+                    return response.json();
+                } else {
+                    throw new Error('Failed to save comment');
+                }
+            })
+            .then(data => {
+                if (data.success) {
+                    addCommentToList(data.comment.id, data.comment.text, data.comment.created_at);
+                    commentInput.value = '';
+                } else {
+                    console.error('Failed to save comment:', data.error);
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        }
+
        let streaming = false;
         let intervalId = null;
         
@@ -493,67 +793,85 @@
             // Flatten and decode the base64 image data
             const flattenedData = data.augmented_image.flat();
             const img = new Image();
-            img.src = 'data:image/png;base64,' + btoa(new Uint8Array(flattenedData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+            img.src = 'data:image/png;base64,' + btoa(new Uint8Array
+
+(flattenedData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
             img.alt = 'Augmented Image';
             resultDiv.appendChild(img);
-        } else {
-            console.error('Expected augmented_image to be an array but received:', data.augmented_image);
+        }else {
+            console.error('Expected augmented_image to be an array but received:', 
+
+data.augmented_image);
         }
 
         // Display results
-        resultDiv.innerHTML += `<p>Matched Image Prediction: ${data.pred_rx.toFixed(2)}, Label: ${data.matched_label}</p>`;
-        resultDiv.innerHTML += `<p>Unmatched Image Prediction: ${data.pred_ux.toFixed(2)}, Label: ${data.unmatched_label}</p>`;
+        resultDiv.innerHTML += `<p>Matched Image Prediction: ${data.pred_rx.toFixed
+
+(2)}, Label: ${data.matched_label}</p>`;
+        resultDiv.innerHTML += `<p>Unmatched Image Prediction: 
+
+${data.pred_ux.toFixed(2)}, Label: ${data.unmatched_label}</p>`;
     })
     .catch(error => {
         console.error('Error:', error);
     });
 }
-/*
-        const csrftoken = getCookie('csrftoken');
+document.getElementById('startButton1').addEventListener('click', async () => {
+    console.log("Start button clicked");        
+    const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const stream = await navigator.mediaDevices.getUserMedia({ video: true });
+            video.srcObject = stream;
+            video.style.display = 'block'; // Show video
+            canvas.style.display = 'none';  // Hide canvas initially
+        });
 
-    async function handleVerify() {
-        const fileInput = document.getElementById('fileInput');
-        const formData = new FormData();
-        formData.append('image', fileInput.files[0]);
+        document.getElementById('captureButton1').addEventListener('click', () => {
+            const video = document.getElementById('video');
+            const canvas = document.getElementById('canvas');
+            const context = canvas.getContext('2d');
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            video.style.display = 'none';  // Hide video
+            canvas.style.display = 'block'; // Show canvas
+        });
 
-        try {
-            const response = await fetch('/upload/', {
-                method: 'POST',
-                headers: {
-                    'X-CSRFToken': csrftoken,
-                },
-                body: formData,
-            });
-
-            if (!response.ok) {
-                throw new Error('Network response was not ok');
+        document.getElementById('stopButton1').addEventListener('click', () => {
+            const video = document.getElementById('video');
+            const stream = video.srcObject;
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
             }
+            video.style.display = 'none';  // Hide video
+            const canvas = document.getElementById('canvas');
+            canvas.style.display = 'none'; // Hide canvas
+        });
 
-            const result = await response.json();
+function saveImage() {
+    const canvas = document.getElementById('canvas');
+    const dataUrl = canvas.toDataURL('image/jpeg');
 
-            // Display results
-            document.getElementById('output').textContent = result.fingerprint_output;
-            document.getElementById('error').textContent = result.fingerprint_error;
+    // Send the captured image to the server
+    fetch('/save_image/', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCookie('csrftoken')
+        },
+        body: JSON.stringify({ image: dataUrl })
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log('Image saved successfully');
+        alert("Thanks for your contribution!!");
+        
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+}
 
-            // Display images
-            if (result.match_image_url) {
-                document.getElementById('matchImage').innerHTML = `<img src="${result.match_image_url}" alt="Match Image"/>`;
-            }
-            if (result.unmatch_image_url) {
-                document.getElementById('unmatchImage').innerHTML = `<img src="${result.unmatch_image_url}" alt="Unmatch Image"/>`;
-            }
-
-            if (result.fingerprint_error) {
-                alert('An error occurred during fingerprint processing.');
-            } else {
-                alert('Fingerprint processing completed successfully.');
-            }
-
-        } catch (error) {
-            console.error('Error:', error);
-            alert('An unexpected error occurred.');
-        }
-    }*/
     function showSection(sectionId) {
         const sections = document.querySelectorAll('.section');
         sections.forEach(section => {
@@ -566,23 +884,19 @@
         if (sectionId !== 'liveVideo') {
                 stopStream();
             }
-            const frontDiv = document.getElementById('front');
-            if (frontDiv) {
-                frontDiv.style.display = 'none';
-            }
+            const homeSection = document.getElementById('home');
+    const frontDiv = document.getElementById('front');
+    
+    if (homeSection && frontDiv) {
+        if (sectionId === 'home') {
+            frontDiv.style.display = 'block';  // Show the .front element if the home section is active
+        } else {
+            frontDiv.style.display = 'none';   // Hide the .front element for other sections
+        }
     }
-
-    
-        
+    }   
     </script>
-     <!--<form id="uploadForm" enctype="multipart/form-data">
-        <input type="file" id="fileInput" name="file">
-        <button type="submit">Verify</button>
-    </form>
-    <div id="result"></div>
-    
-    <video id="video2" width="300" height="300" autoplay></video>
-    <canvas id="canvas2" width="300" height="300"></canvas>
--->
+   
+
 </body>
 </html>

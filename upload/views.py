@@ -10,23 +10,18 @@ import random
 import subprocess
 from imgaug import augmenters as iaa
 from subprocess import run, PIPE
-
-# Create your views here.
-'''
-
-def index(request):
-    return render(request, 'upload/index.html')
-'''
 from django.http import JsonResponse
 import numpy as np 
 import cv2
 from ultralytics import YOLO
 import base64
 import os
+import io
 #from django.core.files.base import ContentFile
 from django.views.decorators.csrf import csrf_exempt
 #from django.http import StreamingHttpResponse
 import json
+from .models import Comment
 # Define paths to virtual environments
 VENV_FINGERPRINT = "D:/G/python/fingerprint/ven"
 
@@ -198,7 +193,55 @@ def process_frame(request):
             return JsonResponse({'detections': detections})
 
     return JsonResponse({'error': 'Invalid request method'}, status=400)
+@csrf_exempt
+def save_image(request):
+    if request.method == 'POST':
+        data = request.body.decode('utf-8')
+        json_data = json.loads(data)
+        image_data = json_data.get('image', '')
 
+        # Remove the base64 header part
+        image_data = image_data.split(",")[1]
+
+        # Convert base64 string to image
+        image = Image.open(io.BytesIO(base64.b64decode(image_data)))
+        
+        # Save the image
+        image.save('D:/H/NEWREACTAPP/backend/static/upload/assets/captured_image.jpg')
+
+        return JsonResponse({'message': 'Image saved successfully'})
+    else:
+        return JsonResponse({'error': 'Invalid request'}, status=400)
+
+
+
+
+
+@csrf_exempt
+def save_comment(request):
+    if request.method == 'POST':
+        data = json.loads(request.body)
+        text = data.get('text')
+        if text:
+            comment = Comment.objects.create(text=text)
+            return JsonResponse({'success': True, 'comment': {'id': comment.id, 'text': comment.text, 'created_at': comment.created_at}}, status=201)
+        return JsonResponse({'success': False, 'error': 'Invalid input'}, status=400)
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
+
+def get_comments(request):
+    comments = Comment.objects.all().order_by('-created_at')
+    comments_list = [{'id': comment.id, 'text': comment.text, 'created_at': comment.created_at} for comment in comments]
+    return JsonResponse({'comments': comments_list}, status=200)
+@csrf_exempt
+def delete_comment(request, comment_id):
+    if request.method == 'DELETE':
+        try:
+            comment = Comment.objects.get(id=comment_id)
+            comment.delete()
+            return JsonResponse({'success': True}, status=200)
+        except Comment.DoesNotExist:
+            return JsonResponse({'success': False, 'error': 'Comment not found'}, status=404)
+    return JsonResponse({'success': False, 'error': 'Invalid method'}, status=405)
 def index(request):
     return render(request, 'upload/index.html')
 
