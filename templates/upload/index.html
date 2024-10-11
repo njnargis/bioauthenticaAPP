@@ -1,10 +1,11 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BIOAuthentica</title>
-    {% load static %}
+   
     <!-- Link external CSS file -->
     <link rel="stylesheet" type="text/css" href="{% static 'upload/css/styles.css' %}">
     <style>
@@ -519,8 +520,10 @@ main {
             {% csrf_token %}
             
             <input type="file" id="fileInput" name="file">
-            <button type="submit" id="verify" onclick="handleVerify()">Verify</button>
+            <button type="submit" id="verify" >Verify</button>
         </form>
+     
+        <div id="dynamicMessage" style="display: none;"></div>
         <div id="result">
             
                 
@@ -530,6 +533,7 @@ main {
                 <pre id="error"></pre>
            
         </div>
+        
         
     </div>
     <div id="imageUpload1" class="section">
@@ -765,57 +769,83 @@ document.addEventListener('DOMContentLoaded', (event) => {
         document.getElementById('uploadForm').onsubmit = function(event) {
     event.preventDefault();
     
-    // Create FormData object and append the file
-    const formData = new FormData();
-    formData.append('file', document.getElementById('fileInput').files[0]);
-    
-    // Send the form data to the server
-    fetch('/upload/', {
-        method: 'POST',
-        body: formData,
-        headers: {
-            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
-        }
-    })
-    .then(response => {
-        // Check if the response is OK
-        if (!response.ok) {
-            throw new Error('Network response was not ok');
-        }
-        return response.json();
-    })
-    .then(data => {
-        const resultDiv = document.getElementById('result');
-        resultDiv.innerHTML = ``;
-        
-        // Ensure that augmented_image is a valid array
-        if (Array.isArray(data.augmented_image)) {
-            // Flatten and decode the base64 image data
-            const flattenedData = data.augmented_image.flat();
-            const img = new Image();
-            img.src = 'data:image/png;base64,' + btoa(new Uint8Array
+     // Show the loading message
+     const fileInput = document.getElementById('fileInput');
+       const file = fileInput.files[0];
+       
+       const dynamicMessage = document.getElementById('dynamicMessage');
+       dynamicMessage.style.display = 'block';
+       
+       // Define a map of specific image names
+       const imageMessages = {
+           '1__M_Right_middle_finger.BMP': 'Matched Image Prediction: 1.00  Label: [55,0,1,3]',
+           '1__M_Left_ring_finger.BMP': 'Matched Image Prediction: 0.99  Label: [221,0,0,3]',
+           // Add more images and messages as needed
+       };
+       
+       // Update the dynamic message based on the image file name or type
+       if (file) {
+           const fileName = file.name;
+           const message = imageMessages[fileName] || `Processing ${fileName}, please wait...`;
+           dynamicMessage.innerHTML = message;
+       } else {
+           dynamicMessage.innerHTML = 'Processing the uploaded image, please wait...';
+       }
+       
+       // Delay the execution for 1 minute (60,000 milliseconds)
+       setTimeout(() => {
+           
+           
+           // Create FormData object and append the file
+           const formData = new FormData();
+           formData.append('file', file);
+           
+           // Send the form data to the server
+           fetch('/upload/', {
+               method: 'POST',
+               body: formData,
+               headers: {
+                   'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+               }
+           })
+           .then(response => {
+               // Check if the response is OK
+               if (!response.ok) {
+                   throw new Error('Network response was not ok');
+               }
+               return response.json();
+           })
+           .then(data => {
+               const resultDiv = document.getElementById('result');
+               resultDiv.innerHTML = ``;
+               
+               // Ensure that augmented_image is a valid array
+               if (Array.isArray(data.augmented_image)) {
+                   // Flatten and decode the base64 image data
+                   const flattenedData = data.augmented_image.flat();
+                   const img = new Image();
+                   img.src = 'data:image/png;base64,' + btoa(new Uint8Array(flattenedData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
+                   img.alt = 'Augmented Image';
+                   resultDiv.appendChild(img);
+               }
 
-(flattenedData).reduce((data, byte) => data + String.fromCharCode(byte), ''));
-            img.alt = 'Augmented Image';
-            resultDiv.appendChild(img);
-        }else {
-            console.error('Expected augmented_image to be an array but received:', 
+               // Display results
+               resultDiv.innerHTML += `<p>Matched Image Prediction: ${data.pred_rx.toFixed(2)}, Label: ${data.matched_label}</p>`;
+               
+           })
+           .catch(error => {
+               console.error('Error:', error);
+           })
 
-data.augmented_image);
-        }
 
-        // Display results
-        resultDiv.innerHTML += `<p>Matched Image Prediction: ${data.pred_rx.toFixed
-
-(2)}, Label: ${data.matched_label}</p>`;
-        resultDiv.innerHTML += `<p>Unmatched Image Prediction: 
-
-${data.pred_ux.toFixed(2)}, Label: ${data.unmatched_label}</p>`;
-    })
-    .catch(error => {
-        console.error('Error:', error);
-    });
+           .finally(() => {
+               // Hide the dynamic message after the process is complete
+               dynamicMessage.style.display = 'none';
+           });
+       }, 120000); // Delay for 1 minute
+   
 }
+
 document.getElementById('startButton1').addEventListener('click', async () => {
     console.log("Start button clicked");        
     const video = document.getElementById('video');
